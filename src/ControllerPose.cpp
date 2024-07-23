@@ -29,6 +29,10 @@ const char* c_viveUltimateTrackerControllerType = "vive_ultimate_tracker";
 const char* c_viveTrackerManufacturer = "HTC";
 const char* c_tundraTrackerManufacturer = "Tundra Labs";
 
+const char* c_driverOffsetToggle = "etee_controller_offset";
+vr::CVRSettingHelper settings_helper(vr::VRSettings());
+const std::string poseOffset = settings_helper.GetString(c_driverOffsetToggle, "tracker_pose");
+
 ControllerPose::ControllerPose(VRPoseConfiguration configuration)
     : m_configuration(configuration),
       m_shadowTrackerId(-1),
@@ -71,27 +75,28 @@ void ControllerPose::DiscoverTrackedDevice() {
 
       // Identifying if it's a VIVE 2.0 or 3.0 tracker
       if (manufacturer == c_viveTrackerManufacturer) {
-          if (adaptorConnection) {
-            DriverLog("VIVE tracker (Smart Adaptor) offsets applied to controller rendermodel.");
+        if (poseOffset == "handle") {
+          DriverLog("VIVE tracker (Basic Adaptor) offsets applied to controller rendermodel.");
 
-            newOffsetXPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "x_offset_position");
-            newOffsetYPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "y_offset_position");
-            newOffsetZPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "z_offset_position");
+          newOffsetXPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_x_offset_position" : "left_x_offset_position");
+          newOffsetYPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_y_offset_position" : "left_y_offset_position");
+          newOffsetZPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_z_offset_position" : "left_z_offset_position");
 
-            newOffsetXRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "x_offset_rotation");
-            newOffsetYRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "y_offset_rotation");
-            newOffsetZRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "z_offset_rotation");
-          } else {
-            DriverLog("VIVE tracker (Basic Adaptor) offsets applied to controller rendermodel.");
+          newOffsetXRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_x_offset_rotation" : "left_x_offset_rotation");
+          newOffsetYRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_y_offset_rotation" : "left_y_offset_rotation");
+          newOffsetZRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_z_offset_rotation" : "left_z_offset_rotation");
+        } else {
+          DriverLog("VIVE tracker (Smart Adaptor) offsets applied to controller rendermodel.");
 
-            newOffsetXPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_x_offset_position" : "left_x_offset_position");
-            newOffsetYPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_y_offset_position" : "left_y_offset_position");
-            newOffsetZPos = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_z_offset_position" : "left_z_offset_position");
+          newOffsetXPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "x_offset_position");
+          newOffsetYPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "y_offset_position");
+          newOffsetZPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "z_offset_position");
 
-            newOffsetXRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_x_offset_rotation" : "left_x_offset_rotation");
-            newOffsetYRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_y_offset_rotation" : "left_y_offset_rotation");
-            newOffsetZRot = vr::VRSettings()->GetFloat("vive_tracker_basic_adaptor_pose_settings", isRightHand ? "right_z_offset_rotation" : "left_z_offset_rotation");
-          }
+          newOffsetXRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "x_offset_rotation");
+          newOffsetYRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "y_offset_rotation");
+          newOffsetZRot = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "z_offset_rotation");
+            
+        }
       }
 
       // Identifying if it's a VIVE Ultimate Tracker
@@ -110,7 +115,7 @@ void ControllerPose::DiscoverTrackedDevice() {
       // Identifying if it's a Tundra tracker
       else if (manufacturer == c_tundraTrackerManufacturer) {
         DriverLog("Adaptor Connection for %s hand: %s", isRightHand ? "right" : "left", adaptorConnection ? "true" : "false");
-        if (adaptorConnection) {
+        if (poseOffset == "handle") {
           DriverLog("Tundra tracker (Smart Adaptor) offsets applied to controller rendermodel.");
 
           newOffsetXPos = vr::VRSettings()->GetFloat("tundra_tracker_smart_adaptor_pose_settings", "x_offset_position");
@@ -257,14 +262,15 @@ void ControllerPose::SetShadowEteeTracker(short deviceId, bool isRightHand) {
 
   bool adaptorConnection = isRightHand ? m_adaptorConnRight : m_adaptorConnLeft;
 
-  // Backhand offset toggle
-  const bool backHandPosition = vr::VRSettings()->GetBool("etee_backhand_offset", "enabled");
+  const char* c_driverOffsetToggle = "etee_controller_offset";
+  vr::CVRSettingHelper settings_helper(vr::VRSettings());
+  const std::string poseOffset = settings_helper.GetString(c_driverOffsetToggle, "pose");
 
   DebugDriverLog("Offsets applied: %s", isRightHand ? "right_x_offset_position" : "left_x_offset_position");
-  DebugDriverLog("Backhand position is: %s", backHandPosition ? "active" : "inactive");
+  DebugDriverLog("Backhand position is: %s", poseOffset);
 
   // If using back of hand tracker position
-  if (backHandPosition == true) {
+  if (poseOffset == "backhand") {
     newOffsetXPos = vr::VRSettings()->GetFloat("etee_back_tracker_pose_settings", isRightHand ? "right_x_offset_position" : "left_x_offset_position");
     newOffsetYPos = vr::VRSettings()->GetFloat("etee_back_tracker_pose_settings", isRightHand ? "right_y_offset_position" : "left_y_offset_position");
     newOffsetZPos = vr::VRSettings()->GetFloat("etee_back_tracker_pose_settings", isRightHand ? "right_z_offset_position" : "left_z_offset_position");
@@ -273,7 +279,9 @@ void ControllerPose::SetShadowEteeTracker(short deviceId, bool isRightHand) {
     newOffsetYRot = vr::VRSettings()->GetFloat("etee_back_tracker_pose_settings", isRightHand ? "right_y_offset_rotation" : "left_y_offset_rotation");
     newOffsetZRot = vr::VRSettings()->GetFloat("etee_back_tracker_pose_settings", isRightHand ? "right_z_offset_rotation" : "left_z_offset_rotation");
 
-  } else {  // If using default tracker position
+  }
+  // If using handle tracker position
+  else { 
     newOffsetXPos = vr::VRSettings()->GetFloat("etee_tracker_pose_settings", isRightHand ? "right_x_offset_position" : "left_x_offset_position");
     newOffsetYPos = vr::VRSettings()->GetFloat("etee_tracker_pose_settings", isRightHand ? "right_y_offset_position" : "left_y_offset_position");
     newOffsetZPos = vr::VRSettings()->GetFloat("etee_tracker_pose_settings", isRightHand ? "right_z_offset_position" : "left_z_offset_position");

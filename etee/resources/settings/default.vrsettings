@@ -30,13 +30,13 @@
         "left_z_offset_rotation": 0.0
     },
     "etee_back_tracker_pose_settings": {
-        "right_x_offset_position": -0.045,
-        "right_y_offset_position": 0.0,
+        "right_x_offset_position": -0.46,
+        "right_y_offset_position": 0.08,
         "right_z_offset_position": -0.046,
 
         "right_x_offset_rotation": -97,
-        "right_y_offset_rotation": -19,
-        "right_z_offset_rotation": -78,
+        "right_y_offset_rotation": -10,
+        "right_z_offset_rotation": -90,
 
         "left_x_offset_position": -0.038,
         "left_y_offset_position": 0.08,
@@ -110,7 +110,7 @@
     "etee_haptic_settings": {
         "enabled": true
     },
-    "etee_backhand_offset": {
-        "enabled": false
+    "etee_controller_offset": {
+        "tracker_pose": "main"
     }
 }
