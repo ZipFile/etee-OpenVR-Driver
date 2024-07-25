@@ -87,11 +87,12 @@ void ControllerPose::DiscoverTrackedDevice() {
       float newOffsetXRot = 0.0f, newOffsetYRot = 0.0f, newOffsetZRot = 0.0f;
 
       bool adaptorConnection = isRightHand ? m_adaptorConnRight : m_adaptorConnLeft;
+      bool useBasicAdaptorPose = vr::VRSettings()->GetBool(c_driverSettingsSection, "use_basic_adaptor_pose");
       DriverLog("Adaptor Connection for %s hand: %s", isRightHand ? "right" : "left", adaptorConnection ? "true" : "false");
 
       // Identifying if it's a VIVE 2.0 or 3.0 tracker
       if (manufacturer == c_viveTrackerManufacturer) {
-          if (adaptorConnection) {
+          if (adaptorConnection && !useBasicAdaptorPose) {
             DriverLog("VIVE tracker (Smart Adaptor) offsets applied to controller rendermodel.");
 
             newOffsetXPos = vr::VRSettings()->GetFloat("vive_tracker_smart_adaptor_pose_settings", "x_offset_position");
@@ -130,7 +131,7 @@ void ControllerPose::DiscoverTrackedDevice() {
       // Identifying if it's a Tundra tracker
       else if (manufacturer == c_tundraTrackerManufacturer) {
         DriverLog("Adaptor Connection for %s hand: %s", isRightHand ? "right" : "left", adaptorConnection ? "true" : "false");
-        if (adaptorConnection) {
+        if (adaptorConnection && !useBasicAdaptorPose) {
           DriverLog("Tundra tracker (Smart Adaptor) offsets applied to controller rendermodel.");
 
           newOffsetXPos = vr::VRSettings()->GetFloat("tundra_tracker_smart_adaptor_pose_settings", "x_offset_position");
